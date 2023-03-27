@@ -171,7 +171,7 @@
     "codegen": "npm run generate-style-code && npm run generate-struct-arrays && npm run generate-shaders",
     "benchmark": "ts-node test/bench/run-benchmarks.ts",
     "gl-stats": "ts-node test/bench/gl-stats.ts",
-    "prepare": "npm run generate-dist-package && npm run codegen",
+    "prepare": "npm run codegen && npm run build-dist",
     "typecheck": "tsc --noEmit"
   },
   "files": [
