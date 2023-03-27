@@ -149,6 +149,7 @@ namespace ImageRequest {
             if (err) {
                 callback(err);
             } else if (data) {
+                console.log(data);
                 const decoratedCallback = (imgErr?: Error | null, imgResult?: CanvasImageSource | null) => {
                     if (imgErr != null) {
                         callback(imgErr);
