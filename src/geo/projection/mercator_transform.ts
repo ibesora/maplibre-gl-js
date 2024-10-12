@@ -228,6 +228,10 @@ export class MercatorTransform implements ITransform {
     public get modelViewProjectionMatrix(): mat4 { return this._viewProjMatrix; }
     public get inverseProjectionMatrix(): mat4 { return this._invProjMatrix; }
     public get useGlobeControls(): boolean { return false; }
+    public get globeness(): number { return 0; }
+    public setGlobeness(_: number) {
+        // Mercator does not support globeness
+    }
     public get nearZ(): number { return this._nearZ; }
     public get farZ(): number { return this._farZ; }
 

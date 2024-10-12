@@ -503,4 +503,6 @@ export class TransformHelper implements ITransformGetters {
         }
         this._callbacks.calcMatrices();
     }
+
+    get globeness(): number { return 0; }
 }

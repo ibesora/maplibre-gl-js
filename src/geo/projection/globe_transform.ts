@@ -303,6 +303,9 @@ export class GlobeTransform implements ITransform {
 
     public get useGlobeControls(): boolean { return this._globeRendering; }
 
+    public get globeness(): number { return this._globeness; }
+    public setGlobeness(value: number) { this._globeness = value; }
+
     public get cameraPosition(): vec3 {
         // Return a copy - don't let outside code mutate our precomputed camera position.
         const copy = createVec3f64(); // Ensure the resulting vector is float64s

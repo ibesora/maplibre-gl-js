@@ -110,6 +110,7 @@ export interface ITransformGetters {
     get unmodified(): boolean;
 
     get renderWorldCopies(): boolean;
+    get globeness(): number;
 }
 
 /**
@@ -220,6 +221,13 @@ interface ITransformMutators {
      * @param coords - Array of tile IDs that will be rendered.
      */
     precacheTiles(coords: Array<OverscaledTileID>): void;
+
+    /**
+     * @internal
+     * Globe transform can smoothly interpolate between globe view and mercator.
+     * Value 0 is mercator, value 1 is globe, anything between is an interpolation between the two projections.
+     */
+    setGlobeness(value: number);
 }
 
 /**

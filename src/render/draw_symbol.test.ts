@@ -10,7 +10,7 @@ import {drawSymbols} from './draw_symbol';
 import * as symbolProjection from '../symbol/projection';
 import type {ZoomHistory} from '../style/zoom_history';
 import type {Map} from '../ui/map';
-import {IReadonlyTransform} from '../geo/transform_interface';
+import {ITransform} from '../geo/transform_interface';
 import type {EvaluationParameters} from '../style/evaluation_parameters';
 import type {SymbolLayerSpecification} from '@maplibre/maplibre-gl-style-spec';
 import {Style} from '../style/style';
@@ -41,7 +41,7 @@ function createMockTransform() {
                 fallbackMatrix: fallback,
             };
         },
-    } as any as IReadonlyTransform;
+    } as any as ITransform;
 }
 
 describe('drawSymbol', () => {
