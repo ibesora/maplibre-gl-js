@@ -5,6 +5,7 @@ uniform sampler2D u_image1;
 
 in vec2 v_pos0;
 in vec2 v_pos1;
+in vec3 v_color;
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -15,6 +16,8 @@ uniform vec3 u_spin_weights;
 
 void main() {
 
+    /*fragColor = vec4(v_color, 1.0);
+    return;*/
     // read and cross-fade colors from the main and parent tiles
     vec4 color0 = texture(u_image0, v_pos0);
     vec4 color1 = texture(u_image1, v_pos1);

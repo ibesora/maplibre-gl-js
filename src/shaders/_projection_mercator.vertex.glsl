@@ -29,3 +29,7 @@ vec4 projectTileFor3D(vec2 posInTile, float elevation) {
     // thus here they are the same function.
     return projectTileWithElevation(posInTile, elevation);
 }
+
+vec3 projectToSphere(vec2 posInTile) {
+    return vec3(posInTile, 0.0);
+}

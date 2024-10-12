@@ -13,6 +13,7 @@ import type {RasterStyleLayer} from '../style/style_layer/raster_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import Point from '@mapbox/point-geometry';
 import {EXTENT} from '../data/extent';
+import { mat4 } from 'gl-matrix';
 
 const cornerCoords = [
     new Point(0, 0),
@@ -120,7 +121,7 @@ function drawTiles(
         }
 
         const terrainData = painter.style.map.terrain && painter.style.map.terrain.getTerrainData(coord);
-        const projectionData = transform.getProjectionData(coord, align);
+        const projectionData = transform.getProjectionData(coord, align, false, painter.isRenderingToTexture);
         const uniformValues = rasterUniformValues(parentTL || [0, 0], parentScaleBy || 1, fade, layer, corners);
 
         const mesh = projection.getMeshFromTileID(context, coord.canonical, useBorder, allowPoles, 'raster');

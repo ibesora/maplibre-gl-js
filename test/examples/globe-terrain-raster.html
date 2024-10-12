@@ -1,26 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>3D Terrain</title>
-    <meta property="og:description" content="Go beyond hillshade and show elevation in actual 3D." />
+    <title>Globe and terrain</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='../../dist/maplibre-gl.css' />
     <script src='../../dist/maplibre-gl-dev.js'></script>
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+        html{
+          width: 100%;
+          height: 100%;
+          font: 400 16pt/1.25 sans-serif;
+        }
+        body{
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          display: grid;
+          grid-template-rows: 1fr;
+          grid-template-columns: 1fr;
+        }
+        body>div{
+          grid-row:1;
+          grid-column:1;
+        }
+        #map {
+          max-width:100%;
+          max-height:100%;
+          overflow:hidden;
+          position:relative;
+        }
+        label{
+          position:absolute;
+          top: 1em;
+          left: 1em;
+        }
     </style>
 </head>
 <body>
 <div id="map"></div>
+<label><input type="checkbox" checked> Globe</label>
 <script>
-    const map = (window.map = new maplibregl.Map({
+    const map = new maplibregl.Map({
         container: 'map',
-        zoom: 12,
-        center: [11.39085, 47.27574],
-        pitch: 70,
-        hash: true,
         style: {
             version: 8,
             sources: {
@@ -28,63 +51,46 @@
                     type: 'raster',
                     tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
                     tileSize: 256,
-                    attribution: '&copy; OpenStreetMap Contributors',
                     maxzoom: 19
                 },
                 // Use a different source for terrain and hillshade layers, to improve render quality
                 terrainSource: {
                     type: 'raster-dem',
-                    url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json',
+                    tiles: ['https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=pk.eyJ1IjoiaWJlc29yYSIsImEiOiJja3FmZGQ0OTIxb3U5MnVvdnc3anh2dzR3In0.-WQVdThIyxA8E-H5G98MnQ'],
                     tileSize: 256
                 },
-                hillshadeSource: {
-                    type: 'raster-dem',
-                    url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json',
-                    tileSize: 256
-                }
             },
             layers: [
                 {
                     id: 'osm',
                     type: 'raster',
                     source: 'osm'
-                },
-                {
+                }
+                /*{
                     id: 'hills',
                     type: 'hillshade',
-                    source: 'hillshadeSource',
+                    source: 'terrainSource',
                     layout: {visibility: 'visible'},
                     paint: {'hillshade-shadow-color': '#473B24'}
-                }
+                }*/
             ],
             projection: {
-                type: 'mercator'
+                type: 'globe'
             },
             terrain: {
                 source: 'terrainSource',
                 exaggeration: 1
             },
-            sky: {}
+            sky: {},
         },
-        maxZoom: 18,
-        maxPitch: 85
-    }));
+        center: [11, 47.5],
+        zoom: 4,
+        hash: true
+    });
+    const input = document.querySelector('input');
+    input?.addEventListener('change', e => map.setProjection({ type: input.checked ? 'globe' : 'mercator' }));
+    window.map = map;
     map.showTileBoundaries = true;
-
-    map.addControl(
-        new maplibregl.NavigationControl({
-            visualizePitch: true,
-            showZoom: true,
-            showCompass: true
-        })
-    );
-
-    map.addControl(
-        new maplibregl.TerrainControl({
-            source: 'terrainSource',
-            exaggeration: 1
-        })
-    );
 </script>
 </body>
 </html>

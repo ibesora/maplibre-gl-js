@@ -19,7 +19,12 @@ vec4 linearToGamma(vec4 color) {
 }
 
 void main() {
+    /*gl_FragColor = vec4(v_texture_pos, 0.0, 1.0);
+    return;*/
     vec4 surface_color = texture(u_texture, vec2(v_texture_pos.x, 1.0 - v_texture_pos.y));
+    /*if (surface_color.a <= 0.0) gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+    else gl_FragColor = surface_color;
+    return;*/
     if (v_fog_depth > u_fog_ground_blend) {
         vec4 surface_color_linear = gammaToLinear(surface_color);
         float blend_color = smoothstep(0.0, 1.0, max((v_fog_depth - u_horizon_fog_blend) / (1.0 - u_horizon_fog_blend), 0.0));
