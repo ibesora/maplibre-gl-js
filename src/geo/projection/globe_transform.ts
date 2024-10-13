@@ -443,7 +443,7 @@ export class GlobeTransform implements ITransform {
         return (this._lastUpdateTime - this._lastGlobeChangeTime) / 1000.0 < (Math.max(globeConstants.globeTransitionTimeSeconds, globeConstants.zoomTransitionTimeSeconds));
     }
 
-    getProjectionData(overscaledTileID: OverscaledTileID, aligned?: boolean, ignoreTerrainMatrix?: boolean): ProjectionData {
+    getProjectionData(overscaledTileID: OverscaledTileID, aligned?: boolean, ignoreTerrainMatrix?: boolean, ignoreGlobeMatrix?: boolean): ProjectionData {
         const data = this._mercatorTransform.getProjectionData(overscaledTileID, aligned, ignoreTerrainMatrix);
 
         // Set 'projectionMatrix' to actual globe transform
@@ -452,7 +452,7 @@ export class GlobeTransform implements ITransform {
         }
 
         data.clippingPlane = this._cachedClippingPlane as [number, number, number, number];
-        data.projectionTransition = this._globeness;
+        data.projectionTransition = ignoreGlobeMatrix ? 0 : this._globeness;
 
         return data;
     }
