@@ -8,7 +8,6 @@ import {Terrain} from './terrain';
 import {RenderPool} from '../gl/render_pool';
 import {Texture} from './texture';
 import type {StyleLayer} from '../style/style_layer';
-import { createProjectionFromName } from '../geo/projection/projection_factory';
 
 /**
  * lookup table which layers should rendered to texture
@@ -134,17 +133,7 @@ export class RenderToTexture {
 
         const type = layer.type;
         const painter = this.painter;
-<<<<<<< Updated upstream
         painter.isRenderingToTexture = true;
-=======
-        const oldProjection = painter.style.projection;
-        const oldGlobeness = painter.transform.globeness;
-        // Switch to a mercator projection to render to the texture
-        const needToSwitchToMercator = oldProjection.name === "globe"
-        if (needToSwitchToMercator) {
-          painter.transform.setGlobeness(0);
-        }
->>>>>>> Stashed changes
         const isLastLayer = this._renderableLayerIds[this._renderableLayerIds.length - 1] === layer.id;
 
         // remember background, fill, line & raster layer to render into a stack
@@ -187,7 +176,7 @@ export class RenderToTexture {
                 painter.context.bindFramebuffer.set(obj.fbo.framebuffer);
                 painter.context.clear({color: Color.transparent, stencil: 0});
                 painter.currentStencilSource = undefined;
-                
+
                 for (let l = 0; l < layers.length; l++) {
                     const layer = painter.style._layers[layers[l]];
                     const coords = layer.source ? this._coordsAscending[layer.source][tile.tileID.key] : [tile.tileID];
@@ -197,13 +186,7 @@ export class RenderToTexture {
                     if (layer.source) tile.rttCoords[layer.source] = this._coordsAscendingStr[layer.source][tile.tileID.key];
                 }
             }
-<<<<<<< Updated upstream
             painter.isRenderingToTexture = false;
-=======
-            if (oldProjection.name === "globe") {
-                painter.transform.setGlobeness(oldGlobeness);
-            }
->>>>>>> Stashed changes
             drawTerrain(this.painter, this.terrain, this._rttTiles);
             this._rttTiles = [];
             this.pool.freeAllObjects();

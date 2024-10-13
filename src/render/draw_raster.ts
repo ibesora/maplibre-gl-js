@@ -13,7 +13,6 @@ import type {RasterStyleLayer} from '../style/style_layer/raster_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import Point from '@mapbox/point-geometry';
 import {EXTENT} from '../data/extent';
-import { mat4 } from 'gl-matrix';
 
 const cornerCoords = [
     new Point(0, 0),

@@ -450,12 +450,12 @@ export class GlobeTransform implements ITransform {
         const data = this._mercatorTransform.getProjectionData(overscaledTileID, aligned, ignoreTerrainMatrix);
 
         // Set 'projectionMatrix' to actual globe transform
-        if (this._globeRendering && !ignoreGlobeMatrix) {
+        if (this._globeRendering) {
             data.mainMatrix = this._globeViewProjMatrix;
         }
 
         data.clippingPlane = this._cachedClippingPlane as [number, number, number, number];
-        data.projectionTransition = this._globeness;
+        data.projectionTransition = ignoreGlobeMatrix ? 0 : this._globeness;
 
         return data;
     }
