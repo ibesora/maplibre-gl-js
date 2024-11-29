@@ -31,7 +31,7 @@ import {drawDebug, drawDebugPadding, selectDebugSource} from './draw_debug';
 import {drawCustom} from './draw_custom';
 import {drawDepth, drawCoords} from './draw_terrain';
 import {type OverscaledTileID} from '../source/tile_id';
-import {drawSky, drawAtmosphere} from './draw_sky';
+import {drawSky, drawAtmosphereAndFog} from './draw_sky';
 import {Mesh} from './mesh';
 import {MercatorShaderDefine, MercatorShaderVariantKey} from '../geo/projection/mercator';
 
@@ -603,10 +603,8 @@ export class Painter {
             this.renderLayer(this, sourceCache, layer, coords, renderOptions);
         }
 
-        // Render atmosphere, only for Globe projection
-        if (renderOptions.isRenderingGlobe) {
-            drawAtmosphere(this, this.style.sky, this.style.light);
-        }
+
+        drawAtmosphereAndFog(this, this.style.sky, this.style.light, renderOptions);
 
         if (this.options.showTileBoundaries) {
             const selectedSource = selectDebugSource(this.style, this.transform.zoom);

@@ -1,9 +1,12 @@
 in vec3 view_direction;
+in vec2 globe_center;
 
 uniform vec3 u_sun_pos;
 uniform vec3 u_globe_position;
 uniform float u_globe_radius;
 uniform float u_atmosphere_blend;
+uniform bool u_render_atmosphere;
+uniform bool u_render_fog;
 
 /*
  * Shader use from https://github.com/wwwtyro/glsl-atmosphere
@@ -18,6 +21,8 @@ const int jSteps = 3;
 const float EARTH_RADIUS = 6371e3;
 /* radius of the atmosphere */
 const float ATMOS_RADIUS = 6471e3;
+/* radius of the fog */
+const float FOG_RADIUS = 6271e3;
 
 vec2 rsi(vec3 r0, vec3 rd, float sr) {
     // ray-sphere intersection that assumes
@@ -130,7 +135,6 @@ vec4 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     }
 
     // Calculate opacity
-    //float opacity = exp(-(length(kRlh) * iOdRlh + kMie * iOdMie));
     float opacity = min(0.75, exp(-(length(kRlh) * length(totalRlh) + kMie * length(totalMie))));
 
     // Calculate the final color.
@@ -139,14 +143,14 @@ vec4 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     return vec4(color, opacity);
 }
 
-void main() {
+vec4 renderAtmosphere() {
     // The globe is small compare to real Earth.
     // To still have a correct atmosphere rendering, we scale the whole world to the EARTH_RADIUS.
     // Change camera position accordingly.
     vec3 scale_camera_pos = -u_globe_position * EARTH_RADIUS / u_globe_radius;
 
     vec4 color = atmosphere(
-        normalize(view_direction),      // ray direction
+        view_direction,                 // ray direction
         scale_camera_pos,               // ray origin
         u_sun_pos,                      // position of the sun
         22.0,                           // intensity of the sun
@@ -164,5 +168,32 @@ void main() {
 
     vec4 no_effect_color = vec4(0, 0, 0, 0);
 
-    gl_FragColor = mix(color, no_effect_color, 1.0 - u_atmosphere_blend);
+    return mix(color, no_effect_color, 1.0 - u_atmosphere_blend);
+}
+
+vec4 renderFog() {
+    vec3 scale_camera_pos = -u_globe_position * EARTH_RADIUS / u_globe_radius;
+    vec3 norm_view_direction = normalize(view_direction);
+    vec2 p = rsi(norm_view_direction, scale_camera_pos, FOG_RADIUS);
+    if (p.x <= p.y) {
+        vec3 intersection = gl_FragCoord.xyz + p.x * norm_view_direction;
+        float dist = length(intersection);
+        return vec4(dist, dist, dist, 1.0);
+        //return vec4(vec3(1.0), 1.0);
+    } 
+    return vec4(0.0, 0.0, 0.0, 0.0);
+}
+
+void main() {
+    vec4 atmosphereColor = vec4(0, 0, 0, 0);
+    if (u_render_atmosphere) {
+      atmosphereColor = renderAtmosphere();
+    }
+
+    vec4 fogColor = vec4(0, 0, 0, 0);
+    if (u_render_fog) {
+      fogColor = renderFog();
+    }
+
+    gl_FragColor = mix(atmosphereColor, fogColor, 1.0);
 }

@@ -23,7 +23,7 @@
     </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map" style="background-color: black;"></div>
 <table id="listing-group" class="listing-group">
     <tr><td><label for="sky-enabled">enabled</label></td><td><input type="checkbox" id="sky-enabled" checked/></td></tr>
     <tr><td><label for="sky-color-picker">sky-color</label></td><td><input type="color" id="sky-color-picker" value="#0000ff" style="width: 100%"/></td></tr>
@@ -45,7 +45,8 @@
             'horizon-color': document.getElementById('horizon-color-picker').value,
             'horizon-fog-blend': +document.getElementById('horizon-fog-blend-slider').value,
             'fog-color': document.getElementById('fog-color-picker').value,
-            'fog-ground-blend': +document.getElementById('fog-ground-blend-slider').value
+            'fog-ground-blend': +document.getElementById('fog-ground-blend-slider').value,
+            'atmosphere-blend': 0.8
         });
     }
 
@@ -94,7 +95,7 @@
             terrain: {
                 source: 'terrainSource',
                 exaggeration: 1
-            }
+            },
         },
         maxZoom: 18,
         maxPitch: 85

@@ -12,7 +12,7 @@ import {Mesh} from './mesh';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import {type IReadonlyTransform} from '../geo/transform_interface';
 import {ColorMode} from '../gl/color_mode';
-import type {Painter} from './painter';
+import type {Painter, RenderOptions} from './painter';
 import {type Context} from '../gl/context';
 import {getGlobeRadiusPixels} from '../geo/projection/globe_utils';
 
@@ -76,7 +76,9 @@ function getSunPos(light: Light, transform: IReadonlyTransform): vec3 {
     return lightPos;
 }
 
-export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
+export function drawAtmosphereAndFog(painter: Painter, sky: Sky, light: Light, renderOptions: RenderOptions) {
+
+    const shouldRenderAtmosphere = renderOptions.isRenderingGlobe;
     const context = painter.context;
     const gl = context.gl;
     const program = painter.useProgram('atmosphere');
@@ -87,9 +89,10 @@ export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
 
     const projectionData = transform.getProjectionData({overscaledTileID: null, applyGlobeMatrix: true, applyTerrainMatrix: true});
     const atmosphereBlend = sky.properties.get('atmosphere-blend') * projectionData.projectionTransition;
+    const horizonFogBlend = sky.properties.get('horizon-fog-blend');
 
-    if (atmosphereBlend === 0) {
-        // Don't draw anything if atmosphere is fully transparent
+    if (atmosphereBlend === 0 && horizonFogBlend === 0) {
+        // Don't draw anything if atmosphere and fog are fully transparent
         return;
     }
 
@@ -109,7 +112,7 @@ export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
     vec[3] = 1;
     const globePosition = [vec[0], vec[1], vec[2]] as vec3;
 
-    const uniformValues = atmosphereUniformValues(sunPos, atmosphereBlend, globePosition, globeRadius, invProjMatrix);
+    const uniformValues = atmosphereUniformValues(sunPos, atmosphereBlend, globePosition, globeRadius, invProjMatrix, shouldRenderAtmosphere, horizonFogBlend > 0);
 
     const mesh = getMesh(context, sky);
 
