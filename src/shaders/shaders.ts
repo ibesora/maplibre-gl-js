@@ -68,6 +68,8 @@ import atmosphereFrag from './atmosphere.fragment.glsl.g';
 import atmosphereVert from './atmosphere.vertex.glsl.g';
 import skyFrag from './sky.fragment.glsl.g';
 import skyVert from './sky.vertex.glsl.g';
+import fogFrag from './fog.fragment.glsl.g'
+import fogVert from './fog.vertex.glsl.g'
 
 export type PreparedShader = {
     fragmentSource: string;
@@ -112,6 +114,7 @@ export const shaders = {
     projectionErrorMeasurement: compile(projectionErrorMeasurementFrag, projectionErrorMeasurementVert),
     atmosphere: compile(atmosphereFrag, atmosphereVert),
     sky: compile(skyFrag, skyVert),
+    fog: compile(fogFrag, fogVert)
 };
 
 // Expand #pragmas to #ifdefs.

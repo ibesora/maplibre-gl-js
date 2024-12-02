@@ -31,7 +31,7 @@ import {drawDebug, drawDebugPadding, selectDebugSource} from './draw_debug';
 import {drawCustom} from './draw_custom';
 import {drawDepth, drawCoords} from './draw_terrain';
 import {type OverscaledTileID} from '../source/tile_id';
-import {drawSky, drawAtmosphere} from './draw_sky';
+import {drawSky, drawAtmosphere, drawFog} from './draw_sky';
 import {Mesh} from './mesh';
 import {MercatorShaderDefine, MercatorShaderVariantKey} from '../geo/projection/mercator';
 
@@ -535,7 +535,7 @@ export class Painter {
             const coords = coordsDescending[layer.source];
             if (layer.type !== 'custom' && !coords.length) continue;
 
-            this.renderLayer(this, sourceCaches[layer.source], layer, coords, renderOptions);
+            //this.renderLayer(this, sourceCaches[layer.source], layer, coords, renderOptions);
         }
 
         // Execute offscreen GPU tasks of the projection manager
@@ -569,7 +569,7 @@ export class Painter {
                 const coords = coordsAscending[layer.source];
 
                 this._renderTileClippingMasks(layer, coords, false);
-                this.renderLayer(this, sourceCache, layer, coords, renderOptions);
+                //this.renderLayer(this, sourceCache, layer, coords, renderOptions);
             }
         }
 
@@ -583,7 +583,7 @@ export class Painter {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
 
-            if (this.renderToTexture && this.renderToTexture.renderLayer(layer, renderOptions)) continue;
+            //if (this.renderToTexture && this.renderToTexture.renderLayer(layer, renderOptions)) continue;
 
             if (!this.opaquePassEnabledForLayer() && !globeDepthRendered) {
                 globeDepthRendered = true;
@@ -600,13 +600,15 @@ export class Painter {
             const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
 
             this._renderTileClippingMasks(layer, coordsAscending[layer.source], false);
-            this.renderLayer(this, sourceCache, layer, coords, renderOptions);
+            //this.renderLayer(this, sourceCache, layer, coords, renderOptions);
         }
 
         // Render atmosphere, only for Globe projection
         if (renderOptions.isRenderingGlobe) {
             drawAtmosphere(this, this.style.sky, this.style.light);
         }
+
+        drawFog(this, this.style.sky, renderOptions);
 
         if (this.options.showTileBoundaries) {
             const selectedSource = selectDebugSource(this.style, this.transform.zoom);

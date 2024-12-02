@@ -94,7 +94,8 @@ export class Program<Us extends UniformBindings> {
         gl.compileShader(fragmentShader);
 
         if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-            throw new Error(`Could not compile fragment shader: ${gl.getShaderInfoLog(fragmentShader)}`);
+            const error = gl.getShaderInfoLog(fragmentShader);
+            throw new Error(`Could not compile fragment shader: ${error}`);
         }
 
         gl.attachShader(this.program, fragmentShader);
@@ -108,7 +109,8 @@ export class Program<Us extends UniformBindings> {
         gl.compileShader(vertexShader);
 
         if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-            throw new Error(`Could not compile vertex shader: ${gl.getShaderInfoLog(vertexShader)}`);
+            const error = gl.getShaderInfoLog(vertexShader)
+            throw new Error(`Could not compile vertex shader: ${error}`);
         }
 
         gl.attachShader(this.program, vertexShader);
@@ -128,7 +130,8 @@ export class Program<Us extends UniformBindings> {
         gl.linkProgram(this.program);
 
         if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            throw new Error(`Program failed to link: ${gl.getProgramInfoLog(this.program)}`);
+            const error = gl.getProgramInfoLog(this.program)
+            throw new Error(`Program failed to link: ${error}`);
         }
 
         gl.deleteShader(vertexShader);
