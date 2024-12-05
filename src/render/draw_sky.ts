@@ -12,9 +12,10 @@ import {Mesh} from './mesh';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import {type IReadonlyTransform} from '../geo/transform_interface';
 import {ColorMode} from '../gl/color_mode';
-import type {Painter} from './painter';
+import type {Painter, RenderOptions} from './painter';
 import {type Context} from '../gl/context';
 import {getGlobeRadiusPixels} from '../geo/projection/globe_utils';
+import { getMercatorHorizon } from '../geo/projection/mercator_utils';
 
 function getMesh(context: Context, sky: Sky): Mesh {
     // Create the Sky mesh the first time we need it
@@ -76,7 +77,9 @@ function getSunPos(light: Light, transform: IReadonlyTransform): vec3 {
     return lightPos;
 }
 
-export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
+export function drawAtmosphereAndFog(painter: Painter, sky: Sky, light: Light, renderOptions: RenderOptions) {
+
+    const shouldRenderAtmosphere = renderOptions.isRenderingGlobe;
     const context = painter.context;
     const gl = context.gl;
     const program = painter.useProgram('atmosphere');
@@ -87,9 +90,19 @@ export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
 
     const projectionData = transform.getProjectionData({overscaledTileID: null, applyGlobeMatrix: true, applyTerrainMatrix: true});
     const atmosphereBlend = sky.properties.get('atmosphere-blend') * projectionData.projectionTransition;
+    const horizonFogBlend = sky.properties.get('horizon-fog-blend');
 
-    if (atmosphereBlend === 0) {
-        // Don't draw anything if atmosphere is fully transparent
+    const cosRoll = Math.cos(transform.rollInRadians);
+    const sinRoll = Math.sin(transform.rollInRadians);
+    const mercatorHorizon  = getMercatorHorizon(transform);
+    const pixelRatio = painter.pixelRatio;
+    const horizon: [number, number] = [(transform.width / 2 - mercatorHorizon * sinRoll)  * pixelRatio,
+      (transform.height / 2 + mercatorHorizon * cosRoll) * pixelRatio]
+    const horizonNormal: [number, number] = [-sinRoll, cosRoll]
+    const mapCenterY = transform.height / 2 * pixelRatio;
+
+    if (atmosphereBlend === 0 && horizonFogBlend === 0) {
+        // Don't draw anything if atmosphere and fog are fully transparent
         return;
     }
 
@@ -109,7 +122,7 @@ export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
     vec[3] = 1;
     const globePosition = [vec[0], vec[1], vec[2]] as vec3;
 
-    const uniformValues = atmosphereUniformValues(sunPos, atmosphereBlend, globePosition, globeRadius, invProjMatrix);
+    const uniformValues = atmosphereUniformValues(sunPos, atmosphereBlend, globePosition, globeRadius, invProjMatrix, shouldRenderAtmosphere, horizonFogBlend > 0, horizon, horizonNormal, mapCenterY, sky, transform.pitch);
 
     const mesh = getMesh(context, sky);
 
