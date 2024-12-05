@@ -12,9 +12,10 @@ import {Mesh} from './mesh';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import {type IReadonlyTransform} from '../geo/transform_interface';
 import {ColorMode} from '../gl/color_mode';
-import type {Painter} from './painter';
+import type {Painter, RenderOptions} from './painter';
 import {type Context} from '../gl/context';
 import {getGlobeRadiusPixels} from '../geo/projection/globe_utils';
+import { fogUniformValues } from './program/fog_program';
 
 function getMesh(context: Context, sky: Sky): Mesh {
     // Create the Sky mesh the first time we need it
@@ -37,6 +38,29 @@ function getMesh(context: Context, sky: Sky): Mesh {
     }
 
     return sky.mesh;
+}
+
+function getFogMesh(context: Context, sky: Sky): Mesh {
+  // Create the fog mesh the first time we need it
+  if (!sky.fogMesh) {
+      const vertexArray = new PosArray();
+      vertexArray.emplaceBack(-90, -180);
+      vertexArray.emplaceBack(90, -180);
+      vertexArray.emplaceBack(90, 180);
+      vertexArray.emplaceBack(-90, 180);
+
+      const indexArray = new TriangleIndexArray();
+      indexArray.emplaceBack(0, 1, 2);
+      indexArray.emplaceBack(0, 2, 3);
+
+      sky.mesh = new Mesh(
+          context.createVertexBuffer(vertexArray, posAttributes.members),
+          context.createIndexBuffer(indexArray),
+          SegmentVector.simpleSegment(0, 0, vertexArray.length, indexArray.length)
+      );
+  }
+
+  return sky.fogMesh;
 }
 
 export function drawSky(painter: Painter, sky: Sky) {
@@ -114,4 +138,26 @@ export function drawAtmosphere(painter: Painter, sky: Sky, light: Light) {
     const mesh = getMesh(context, sky);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.disabled, uniformValues, null, null, 'atmosphere', mesh.vertexBuffer, mesh.indexBuffer, mesh.segments);
+}
+
+export function drawFog(painter: Painter, sky: Sky, renderOptions: RenderOptions) {
+  const context = painter.context;
+  const gl = context.gl;
+  const program = painter.useProgram('fog');
+  const transform = painter.transform;
+
+  const projectionData = transform.getProjectionData({overscaledTileID: null, applyGlobeMatrix: renderOptions.isRenderingGlobe});
+  projectionData.mainMatrix = transform.modelViewProjectionMatrix;
+  const horizonFogBlend = sky.properties.get('horizon-fog-blend');
+
+  if (horizonFogBlend === 0) {
+      // Don't draw anything if fog is fully transparent
+      return;
+  }
+
+  const uniformValues = fogUniformValues(sky, transform.pitch);
+
+  const mesh = getFogMesh(context, sky);
+
+  program.draw(context, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.disabled, uniformValues, null, projectionData, 'fog', mesh.vertexBuffer, mesh.indexBuffer, mesh.segments);
 }
