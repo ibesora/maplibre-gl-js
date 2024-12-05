@@ -7,6 +7,15 @@ uniform float u_globe_radius;
 uniform float u_atmosphere_blend;
 uniform bool u_render_atmosphere;
 uniform bool u_render_fog;
+uniform vec2 u_horizon;
+uniform vec2 u_horizon_normal;
+
+uniform vec4 u_fog_color;
+uniform vec4 u_horizon_color;
+uniform float u_fog_ground_blend;
+uniform float u_fog_ground_blend_opacity;
+uniform float u_horizon_fog_blend;
+uniform float u_map_center_y;
 
 /*
  * Shader use from https://github.com/wwwtyro/glsl-atmosphere
@@ -171,17 +180,45 @@ vec4 renderAtmosphere() {
     return mix(color, no_effect_color, 1.0 - u_atmosphere_blend);
 }
 
+const float gamma = 2.2;
+
+vec4 gammaToLinear(vec4 color) {
+    return pow(color, vec4(gamma));
+}
+
+vec4 linearToGamma(vec4 color) {
+    return pow(color, vec4(1.0 / gamma));
+}
+
 vec4 renderFog() {
+#ifdef GLOBE
     vec3 scale_camera_pos = -u_globe_position * EARTH_RADIUS / u_globe_radius;
     vec3 norm_view_direction = normalize(view_direction);
     vec2 p = rsi(norm_view_direction, scale_camera_pos, FOG_RADIUS);
     if (p.x <= p.y) {
         vec3 intersection = gl_FragCoord.xyz + p.x * norm_view_direction;
         float dist = length(intersection);
-        return vec4(dist, dist, dist, 1.0);
-        //return vec4(vec3(1.0), 1.0);
+        //return vec4(dist, dist, dist, 1.0);
+        return vec4(1.0, 0.0, 0.0, 1.0);
     } 
-    return vec4(0.0, 0.0, 0.0, 0.0);
+#else
+    float x = gl_FragCoord.x;
+    float y = gl_FragCoord.y;
+    float dist = dot(vec2(1.0), (u_horizon - gl_FragCoord.xy) * u_horizon_normal);
+    float dist_to_center = 
+    if (dist > 0.0) {
+        if (dist > u_horizon_fog_blend) {
+            //return vec4(1.0, 0.0, 0.0, 1.0);
+            float blend_color = smoothstep(0.0, 1.0, max((dist - u_horizon_fog_blend) / (1.0 - u_horizon_fog_blend), 0.0));
+            vec4 fog_horizon_color_linear = mix(gammaToLinear(u_fog_color), gammaToLinear(u_horizon_color), blend_color);
+            float factor_fog = max(dist - u_fog_ground_blend, 0.0) / (1.0 - u_fog_ground_blend);
+            return linearToGamma(mix(vec4(0, 0, 0, 0), fog_horizon_color_linear, pow(factor_fog, 2.0) * u_fog_ground_blend_opacity));
+        }
+    } else {
+        return vec4(0.0, 0.0, 0.0, 0.0);
+    }
+#endif
+    return vec4(vec3(dist), 0.0);
 }
 
 void main() {
